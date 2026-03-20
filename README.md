@@ -28,3 +28,23 @@ uv sync
 
 the above commands are enough to install all dependencies required for the project inside `.venv` file in root directory. it will also build the project as library.
 
+## Usage
+This package is intended to be added as a project dependency using uv:
+```bash
+uv add git+https://github.com/ejustroboticsclub/mate-rov-2026-information-sheet-problem
+```
+and then used inside the main workspace by importing it:
+```python
+from information_sheet_problem import solve
+
+solve(input)
+```
+note that the API is still not determined and the above sample is just an example of what could be done. However this library is NOT responsible for handling taking the input from the user. This will probably be the responsibliy of the gui team since the input has to be manually taken.
+
+
+## TODOs
+- we still need to implement actual business logic
+- split the __init__.py file into multiple other files (refactor)
+- write __all__ to expose only the public API (single function)
+- make sure that the input to your function is friendly (idk how to represent a geopoint inside a float tbh there is probably a better way)
+- we probably need to write a function that takes seperate (hours,minutes,seconds) and convert them to a geopoint

@@ -16,5 +16,11 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "pytest==9.0.2",
+    "pytest-cov",
 ]
 
+[tool.pytest.ini_options]
+addopts = "--cov=information_sheet_problem" #include all packages under src directory
+testpaths = [
+    "tests",
+]

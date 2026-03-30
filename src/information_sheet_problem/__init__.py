@@ -1,21 +1,25 @@
 from dataclasses import dataclass
 from enum import Enum
 
+
 class ThreatLevel(Enum):
     GREEN = "green"
     YELLOW = "yellow"
     RED = "red"
 
+
 @dataclass(frozen=True)
 class GeoPoint:
-    latitude: float   # decimal degrees
+    latitude: float  # decimal degrees
     longitude: float  # decimal degrees
+
 
 @dataclass(frozen=True)
 class Platform:
     name: str
     location: GeoPoint
     water_depth: float  # meters
+
 
 DEFAULT_PLATFORMS: list[Platform] = [
     Platform("Hibernia", GeoPoint(46.7504, -48.7819), 78),
@@ -24,16 +28,19 @@ DEFAULT_PLATFORMS: list[Platform] = [
     Platform("Hebron", GeoPoint(46.544, -48.498), 93),
 ]
 
+
 @dataclass(frozen=True)
 class Iceberg:
     location: GeoPoint
     heading_degrees: float
     keel_depth: float
 
+
 @dataclass(frozen=True)
 class Track:
     origin: GeoPoint
     heading_degrees: float
+
 
 @dataclass(frozen=True)
 class PlatformThreatResult:
@@ -41,14 +48,17 @@ class PlatformThreatResult:
     surface_threat: ThreatLevel
     subsea_threat: ThreatLevel
 
+
 @dataclass(frozen=True)
 class MapOverlay:
     iceberg_track: tuple[GeoPoint, GeoPoint]  # start + projected point
     platform_points: list[GeoPoint]
 
+
 @dataclass(frozen=True)
 class RenderedMap:
     """TODO: should probably be a numpy image with fixed shape"""
+
 
 @dataclass(frozen=True)
 class AnalysisResult:
@@ -56,13 +66,16 @@ class AnalysisResult:
     overlay: MapOverlay
     rendered_map: RenderedMap
 
+
 def heading_to_unit_vector(heading_degrees: float) -> tuple[float, float]:
     """Convert heading (degrees) to a 2D unit vector."""
     raise NotImplementedError("TODO")
 
+
 def distance_nm(a: GeoPoint, b: GeoPoint) -> float:
     """Approximate distance in nautical miles."""
     raise NotImplementedError("TODO")
+
 
 def distance_point_to_track_nm(
     point: GeoPoint,
@@ -73,6 +86,7 @@ def distance_point_to_track_nm(
     """
     raise NotImplementedError("TODO")
 
+
 def intersects_within_radius_nm(
     point: GeoPoint,
     track: Track,
@@ -80,6 +94,7 @@ def intersects_within_radius_nm(
 ) -> bool:
     """Whether iceberg track passes within radius of point."""
     raise NotImplementedError("TODO")
+
 
 def evaluate_surface_threat(
     distance_nm: float,
@@ -92,6 +107,7 @@ def evaluate_surface_threat(
     - distance thresholds (5, 10 nm)
     """
     raise NotImplementedError("TODO")
+
 
 def evaluate_subsea_threat(
     intersects: bool,
@@ -107,6 +123,7 @@ def evaluate_subsea_threat(
     """
     raise NotImplementedError("TODO")
 
+
 def analyze_platforms(
     iceberg: Iceberg,
     platforms: list[Platform] = DEFAULT_PLATFORMS,
@@ -121,6 +138,7 @@ def analyze_platforms(
     """
     raise NotImplementedError("TODO")
 
+
 def build_map_overlay(
     iceberg: Iceberg,
     platforms: list[Platform],
@@ -131,10 +149,11 @@ def build_map_overlay(
     """
     raise NotImplementedError("TODO")
 
+
 def render_map(overlay: MapOverlay) -> RenderedMap:
     """
     Converts overlay into an image (PNG bytes).
-    
+
     No displaying, no saving to disk.
     """
     raise NotImplementedError("TODO")

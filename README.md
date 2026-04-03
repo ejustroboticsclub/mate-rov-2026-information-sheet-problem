@@ -12,7 +12,8 @@ you will notice that I added the important commands in the Justfile. you can cop
 ```
 just test
 ```
-for testing with pytest. To install it you can see its official [website](https://just.systems/).
+for testing with pytest.\
+To install it you can see its official [website](https://just.systems/). or install it with `uv` using `uv tool install rust-just`.
 
 ## Getting Started
 

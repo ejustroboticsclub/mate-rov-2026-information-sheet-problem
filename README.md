@@ -2,6 +2,10 @@
 
 library for providing solution to second part of task 2.2 in MATE-ROV-2026. the task includes getting an information sheet and providing threat levels to each oil platform and each subsea asset. After completing the solution in the repo we should tag the latest commit to be used as a mark when we add this project as a dependency to the ROV workspace.
 
+## General Resources
+
+In order to find the resources for testing (examples) and format of this problem please go to the `2026 Product Demonstration Resources` section in the following link [https://materovcompetition.org/2026](https://materovcompetition.org/2026)
+
 ## Required tools for development
 
 ### 1. uv

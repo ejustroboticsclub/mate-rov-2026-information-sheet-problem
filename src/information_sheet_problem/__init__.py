@@ -33,7 +33,7 @@ DEFAULT_PLATFORMS: list[Platform] = [
 class Iceberg:
     location: GeoPoint
     heading_degrees: float
-    keel_depth: float
+    keel_depth: float  # meters
 
 
 @dataclass(frozen=True)

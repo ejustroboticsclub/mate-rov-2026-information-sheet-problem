@@ -1,9 +1,6 @@
 import pytest
 
-from information_sheet_problem import Iceberg
-from information_sheet_problem import GeoPoint
-from information_sheet_problem import ThreatLevel
-from information_sheet_problem import analyze_platforms
+from information_sheet_problem import GeoPoint, Iceberg, ThreatLevel, analyze_platforms
 
 
 # TODO: this is a bit of a hack to convert the DMS coordinates in the PDF examples to decimal degrees. I don't

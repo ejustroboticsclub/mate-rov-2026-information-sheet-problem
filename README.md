@@ -48,8 +48,6 @@ note that the API is still not determined and the above sample is just an exampl
 
 
 ## TODOs
-- we still need to implement actual business logic
-- split the __init__.py file into multiple other files (refactor)
-- write __all__ to expose only the public API (single function)
+- we still need to implement map rendering using something like opencv
 - make sure that the input to your function is friendly (idk how to represent a geopoint inside a float tbh there is probably a better way)
 - we probably need to write a function that takes seperate (hours,minutes,seconds) and convert them to a geopoint

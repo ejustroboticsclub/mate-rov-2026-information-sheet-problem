@@ -26,3 +26,7 @@ addopts = "--cov=information_sheet_problem" #include all packages under src dire
 testpaths = [
     "tests",
 ]
+
+[tool.ruff]
+lint.extend-select = ["I", "UP"]
+fix = true

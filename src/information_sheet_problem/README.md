@@ -178,16 +178,6 @@ From `information_sheet_problem.domain_data_classes`:
 
 ---
 
-## Usage Example (Conceptual)
-
-```python
-result = analyze_platforms(iceberg)
-for r in result.results:
-    print(r.platform.name, r.surface_threat, r.subsea_threat)
-```
-
----
-
 ## Notes & Assumptions
 
 - Distance calculations are approximate (local tangent plane)

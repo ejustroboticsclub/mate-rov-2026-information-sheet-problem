@@ -24,7 +24,7 @@ It depends on domain data classes defined in:
 Platforms are offshore structures with known geographic locations and water depths.
 
 ### Iceberg
-An iceberg has a location, heading, and keel depth (submerged depth).
+An iceberg has a location, heading, and keel depth.
 
 ### Track
 A track is an iceberg path defined by its origin and heading.

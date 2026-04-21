@@ -51,3 +51,6 @@ dmypy.json
 
 # Ruff stuff:
 .ruff_cache/
+# pixi environments
+.pixi/*
+!.pixi/config.toml

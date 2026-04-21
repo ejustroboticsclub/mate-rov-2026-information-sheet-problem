@@ -1,0 +1,30 @@
+# [workspace]
+# authors = ["omar-abdelgawad <omar.abdelgawad@ejust.edu.eg>"]
+# channels = ["conda-forge"]
+# name = "information-sheet-problem"
+# platforms = ["linux-64"]
+# version = "0.1.0"
+
+# [workspace] 
+# channels = ["https://prefix.dev/conda-forge"]
+# platforms = ["win-64", "linux-64", "osx-arm64", "osx-64"]
+# preview = ["pixi-build"]
+#
+# [dependencies] 
+# python_rich = { path = "." }
+#
+# [tasks] 
+# start = "rich-example-main"
+
+[package] 
+name = "conda_information_sheet"
+# version = "0.1.0"
+
+[package.build] 
+backend = { name = "pixi-build-python", version = "0.*" }
+
+# [package.host-dependencies] 
+# hatchling = "==1.26.3"
+#
+# [package.run-dependencies] 
+# rich = "13.9.*"

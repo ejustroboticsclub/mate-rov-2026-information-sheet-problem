@@ -22,6 +22,11 @@ name = "conda_information_sheet"
 
 [package.build] 
 backend = { name = "pixi-build-python", version = "0.*" }
+channels = ["https://prefix.dev/conda-forge"]
+
+# The Python backend can automatically map PyPI dependencies from your pyproject.toml to their corresponding conda packages. This means you don't need to manually duplicate your dependencies in both pyproject.toml and pixi.toml.
+[package.build.config]
+ignore-pypi-mapping = false
 
 # [package.host-dependencies] 
 # hatchling = "==1.26.3"

@@ -26,16 +26,18 @@ _DEFAULT_PNG_BYTES = bytes.fromhex(
     "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489"
     "0000000d49444154789c6360000000020001e221bc330000000049454e44ae426082"
 )
+_MAX_COLLISION_RETRIES = 100
 
 
 def _extract_png_bytes(rendered_map: object) -> bytes:
     """Extract PNG bytes from common rendered-map byte attributes, with a fallback."""
-    for attr in ("png_bytes", "image_bytes", "bytes", "data"):
+    checked_attrs = ("png_bytes", "image_bytes", "bytes", "data")
+    for attr in checked_attrs:
         value = getattr(rendered_map, attr, None)
         if isinstance(value, bytes) and value:
             return value
     warnings.warn(
-        "No image bytes found on rendered map; using default 1x1 PNG fallback.",
+        f"No image bytes found in rendered map attributes {checked_attrs}; using default 1x1 PNG fallback.",
         stacklevel=2,
     )
     return _DEFAULT_PNG_BYTES
@@ -46,10 +48,9 @@ def save_generated_image(image_bytes: bytes, output_dir: Path | None = None) -> 
     directory = output_dir or (Path.cwd() / "generated")
     directory.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%S.%fZ")
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H_%M_%S.%fZ")
     image_path = directory / f"{timestamp}.png"
-    max_retries = 100
-    for suffix in range(max_retries + 1):
+    for suffix in range(_MAX_COLLISION_RETRIES + 1):
         candidate = image_path if suffix == 0 else directory / f"{timestamp}_{suffix}.png"
         try:
             with candidate.open("xb") as handle:
@@ -59,7 +60,7 @@ def save_generated_image(image_bytes: bytes, output_dir: Path | None = None) -> 
             continue
 
     raise RuntimeError(
-        f"Could not create image file in {directory} after {max_retries} retries."
+        f"Could not create image file in {directory} after {_MAX_COLLISION_RETRIES} retries."
     )
 
 

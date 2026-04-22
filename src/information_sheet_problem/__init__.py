@@ -148,6 +148,7 @@ def analyze_platforms_from_runtime_data(
         ]
     return analyze_platforms(iceberg=iceberg, platforms=platforms)
 
+
 def heading_to_unit_vector(heading_degrees: float) -> tuple[float, float]:
     """Convert heading (degrees) to a 2D unit vector."""
     heading_radians = math.radians(heading_degrees)

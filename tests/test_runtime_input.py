@@ -52,6 +52,26 @@ def test_analyze_platforms_from_runtime_data_accepts_runtime_platforms() -> None
     assert result.results == expected.results
 
 
+def test_analyze_platforms_from_runtime_data_accepts_flat_iceberg_data() -> None:
+    iceberg_data = {
+        "latitude": 47.65,
+        "longitude": -48.62,
+        "heading_degrees": 158.0,
+        "keel_depth": 99.0,
+    }
+
+    runtime_result = analyze_platforms_from_runtime_data(iceberg_data)
+    direct_result = analyze_platforms(
+        Iceberg(
+            location=GeoPoint(47.65, -48.62),
+            heading_degrees=158.0,
+            keel_depth=99.0,
+        )
+    )
+
+    assert runtime_result.results == direct_result.results
+
+
 def test_analyze_platforms_from_runtime_data_validates_required_fields() -> None:
     with pytest.raises(ValueError, match="missing required field 'keel_depth'"):
         analyze_platforms_from_runtime_data(

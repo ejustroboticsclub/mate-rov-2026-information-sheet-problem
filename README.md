@@ -44,7 +44,7 @@ from information_sheet_problem import solve
 
 solve(input)
 ```
-note that the API is still not determined and the above sample is just an example of what could be done. However this library is NOT responsible for handling taking the input from the user. This will probably be the responsibliy of the gui team since the input has to be manually taken.
+note that the API is still not determined and the above sample is just an example of what could be done. However this library is NOT responsible for handling taking the input from the user. This will probably be the responsibility of the gui team since the input has to be manually taken.
 
 For runtime GUI/user input, you can use `analyze_platforms_from_runtime_data` with dictionaries:
 ```python

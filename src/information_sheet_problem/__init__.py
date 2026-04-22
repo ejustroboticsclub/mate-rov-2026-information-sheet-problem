@@ -341,7 +341,7 @@ def render_map(
     padding_px: int = 70,
     subtle_nw_gradient: bool = True,
     # If provided, will save PNG to disk (avoid during tests unless you want it)
-    save_path: str | None = None,
+    save_path: str | None = "./generated",
 ) -> RenderedMap:
     """
     High-precision renderer using pyproj:
@@ -485,4 +485,4 @@ def render_map(
             f.write(png.tobytes())
 
     # Keep compatibility with your current RenderedMap (no fields)
-    return RenderedMap(png_bytes=png.tobytes())
+    return RenderedMap(png.tobytes())

@@ -1,4 +1,6 @@
 import math
+from datetime import datetime
+from pathlib import Path
 
 from information_sheet_problem.domain_data_classes import (
     AnalysisResult,
@@ -293,8 +295,8 @@ def render_map(
     image_size: tuple[int, int] = (900, 1200),  # (width, height)
     padding_px: int = 70,
     subtle_nw_gradient: bool = True,
-    # If provided, will save PNG to disk (avoid during tests unless you want it)
-    save_path: str | None = None,
+    # Directory where PNGs are saved; files are timestamped automatically.
+    save_path: str | None = "generated",
 ) -> RenderedMap:
     """
     High-precision renderer using pyproj:
@@ -431,11 +433,14 @@ def render_map(
         cv2.circle(img, (px, py), 6, (0, 0, 0), 2)
         cv2.putText(img, plat.name, (px + 10, py + 5), font, 0.45, (0, 0, 0), 1, cv2.LINE_AA)
 
-    # Encode PNG (and optionally save)
+    # Encode PNG and save into a timestamped file.
     ok, png = cv2.imencode(".png", img)
-    if ok and save_path is not None:
-        with open(save_path, "wb") as f:
-            f.write(png.tobytes())
+    if ok:
+        output_dir = Path(save_path or "generated")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        output_path = output_dir / f"{timestamp}.png"
+        output_path.write_bytes(png.tobytes())
 
     # Keep compatibility with your current RenderedMap (no fields)
     return RenderedMap(png_bytes=png.tobytes())

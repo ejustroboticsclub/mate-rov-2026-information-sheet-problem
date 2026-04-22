@@ -40,15 +40,17 @@ def save_generated_image(image_bytes: bytes, output_dir: Path | None = None) -> 
     directory = output_dir or (Path.cwd() / "generated")
     directory.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S_%fZ")
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%S.%fZ")
     image_path = directory / f"{timestamp}.png"
     suffix = 1
-    while image_path.exists():
-        image_path = directory / f"{timestamp}_{suffix}.png"
-        suffix += 1
-
-    image_path.write_bytes(image_bytes)
-    return image_path
+    while True:
+        try:
+            with image_path.open("xb") as handle:
+                handle.write(image_bytes)
+            return image_path
+        except FileExistsError:
+            image_path = directory / f"{timestamp}_{suffix}.png"
+            suffix += 1
 
 
 def _demo_save_image() -> Path:

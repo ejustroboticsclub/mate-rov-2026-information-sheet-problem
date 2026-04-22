@@ -48,7 +48,7 @@ def save_generated_image(image_bytes: bytes, output_dir: Path | None = None) -> 
     directory = output_dir or (Path.cwd() / "generated")
     directory.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H_%M_%S.%fZ")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f_UTC")
     image_path = directory / f"{timestamp}.png"
     for suffix in range(_MAX_COLLISION_RETRIES + 1):
         candidate = image_path if suffix == 0 else directory / f"{timestamp}_{suffix}.png"
@@ -60,7 +60,8 @@ def save_generated_image(image_bytes: bytes, output_dir: Path | None = None) -> 
             continue
 
     raise RuntimeError(
-        f"Could not create image file in {directory} after {_MAX_COLLISION_RETRIES} retries."
+        f"Could not create unique image file matching pattern {timestamp}*.png in "
+        f"{directory} after {_MAX_COLLISION_RETRIES} retries."
     )
 
 

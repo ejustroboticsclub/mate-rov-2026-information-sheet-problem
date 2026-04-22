@@ -46,6 +46,26 @@ solve(input)
 ```
 note that the API is still not determined and the above sample is just an example of what could be done. However this library is NOT responsible for handling taking the input from the user. This will probably be the responsibliy of the gui team since the input has to be manually taken.
 
+For runtime GUI/user input, you can use `analyze_platforms_from_runtime_data` with dictionaries:
+```python
+from information_sheet_problem import analyze_platforms_from_runtime_data
+
+result = analyze_platforms_from_runtime_data(
+    iceberg_data={
+        "location": {"latitude": 47.65, "longitude": -48.62},
+        "heading_degrees": 158.0,
+        "keel_depth": 99.0,
+    },
+    platforms_data=[
+        {
+            "name": "Custom Platform",
+            "location": {"latitude": 46.75, "longitude": -48.78},
+            "water_depth": 78.0,
+        }
+    ],  # optional, defaults to built-in platforms
+)
+```
+
 
 ## TODOs
 - we still need to implement map rendering using something like opencv

@@ -1,4 +1,5 @@
 import math
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
 
@@ -60,6 +61,92 @@ class AnalysisResult:
     results: list[PlatformThreatResult]
     overlay: MapOverlay
     rendered_map: RenderedMap
+
+
+def _require_float(
+    data: Mapping[str, object],
+    key: str,
+    *,
+    context: str,
+) -> float:
+    value = data.get(key)
+    if value is None:
+        raise ValueError(f"missing required field '{key}' in {context}")
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        raise ValueError(f"field '{key}' in {context} must be numeric")
+    return float(value)
+
+
+def _parse_geo_point_from_mapping(
+    data: Mapping[str, object],
+    *,
+    context: str,
+) -> GeoPoint:
+    if "location" in data:
+        location = data.get("location")
+        if not isinstance(location, Mapping):
+            raise ValueError(f"field 'location' in {context} must be an object")
+        return _parse_geo_point_from_mapping(location, context=f"{context}.location")
+
+    latitude = _require_float(data, "latitude", context=context)
+    longitude = _require_float(data, "longitude", context=context)
+    return GeoPoint(latitude=latitude, longitude=longitude)
+
+
+def _parse_iceberg_from_mapping(data: Mapping[str, object]) -> Iceberg:
+    location = _parse_geo_point_from_mapping(data, context="iceberg")
+    heading_degrees = _require_float(data, "heading_degrees", context="iceberg")
+    keel_depth = _require_float(data, "keel_depth", context="iceberg")
+    return Iceberg(
+        location=location,
+        heading_degrees=heading_degrees,
+        keel_depth=keel_depth,
+    )
+
+
+def _parse_platform_from_mapping(
+    data: Mapping[str, object],
+    *,
+    index: int,
+) -> Platform:
+    context = f"platforms[{index}]"
+    name = data.get("name")
+    if name is None:
+        raise ValueError(f"missing required field 'name' in {context}")
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError(f"field 'name' in {context} must be a non-empty string")
+
+    location = _parse_geo_point_from_mapping(data, context=context)
+    water_depth = _require_float(data, "water_depth", context=context)
+    return Platform(name=name, location=location, water_depth=water_depth)
+
+
+def analyze_platforms_from_runtime_data(
+    iceberg_data: Mapping[str, object],
+    platforms_data: Sequence[Mapping[str, object]] | None = None,
+) -> AnalysisResult:
+    """
+    Analyze threat levels using plain runtime data structures.
+
+    Expected iceberg shape:
+      {"latitude": float, "longitude": float, "heading_degrees": float, "keel_depth": float}
+    or:
+      {"location": {"latitude": float, "longitude": float}, "heading_degrees": float, "keel_depth": float}
+
+    Expected platform shape:
+      {"name": str, "latitude": float, "longitude": float, "water_depth": float}
+    or:
+      {"name": str, "location": {"latitude": float, "longitude": float}, "water_depth": float}
+    """
+    iceberg = _parse_iceberg_from_mapping(iceberg_data)
+    if platforms_data is None:
+        platforms = DEFAULT_PLATFORMS
+    else:
+        platforms = [
+            _parse_platform_from_mapping(platform_data, index=i)
+            for i, platform_data in enumerate(platforms_data)
+        ]
+    return analyze_platforms(iceberg=iceberg, platforms=platforms)
 
 def heading_to_unit_vector(heading_degrees: float) -> tuple[float, float]:
     """Convert heading (degrees) to a 2D unit vector."""

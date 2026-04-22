@@ -1,7 +1,6 @@
+import math
 from dataclasses import dataclass
 from enum import Enum
-import math
-
 
 EARTH_RADIUS_M = 6_371_000.0
 M_PER_NM = 1852.0

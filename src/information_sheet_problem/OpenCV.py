@@ -1,6 +1,6 @@
 import math
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable, Tuple, Optional
 
 import cv2
 import numpy as np
@@ -45,7 +45,7 @@ def format_deg_min(value: float, is_lat: bool) -> str:
     return f"{deg}°{minutes:02d}'{hemi}"
 
 
-def heading_to_unit_vector_bearing(bearing_deg: float) -> Tuple[float, float]:
+def heading_to_unit_vector_bearing(bearing_deg: float) -> tuple[float, float]:
     """
     Unit direction in local EN (East, North) coordinates.
     0°=North, 90°=East, clockwise.
@@ -55,11 +55,11 @@ def heading_to_unit_vector_bearing(bearing_deg: float) -> Tuple[float, float]:
 
 
 def clip_infinite_line_to_rect(
-    p0: Tuple[float, float],
-    v: Tuple[float, float],
-    rect: Tuple[float, float, float, float],
+    p0: tuple[float, float],
+    v: tuple[float, float],
+    rect: tuple[float, float, float, float],
     eps: float = 1e-12,
-) -> Optional[Tuple[Tuple[float, float], Tuple[float, float]]]:
+) -> tuple[tuple[float, float], tuple[float, float]] | None:
     """
     Clip infinite line p(t)=p0+t*v to rectangle (xmin,ymin,xmax,ymax).
     Returns two points on the rectangle boundary (entry/exit) or None.
@@ -109,11 +109,11 @@ def clip_infinite_line_to_rect(
 def put_rotated_text_right(
     img: np.ndarray,
     text: str,
-    anchor_xy: Tuple[int, int],
+    anchor_xy: tuple[int, int],
     font=cv2.FONT_HERSHEY_SIMPLEX,
     font_scale: float = 0.45,
     thickness: int = 1,
-    color: Tuple[int, int, int] = (0, 0, 0),
+    color: tuple[int, int, int] = (0, 0, 0),
 ) -> None:
     (tw, th), baseline = cv2.getTextSize(text, font, font_scale, thickness)
     pad = 4
@@ -133,10 +133,10 @@ def put_rotated_text_right(
 def draw_pdf_style_map_precise(
     track: Track,
     platforms: Iterable[Platform],
-    image_size: Tuple[int, int] = (900, 1200),  # (width, height)
+    image_size: tuple[int, int] = (900, 1200),  # (width, height)
     padding_px: int = 70,
     grid_step_minutes: int = 30,
-    bounds_deg: Tuple[float, float, float, float] = (46.0, 48.0, -49.5, -47.5),  # lat_min, lat_max, lon_min, lon_max
+    bounds_deg: tuple[float, float, float, float] = (46.0, 48.0, -49.5, -47.5),  # lat_min, lat_max, lon_min, lon_max
     subtle_nw_gradient: bool = True,
     # Use UTM 22N (covers Newfoundland area well)
     crs_projected: CRS = CRS.from_epsg(32622),
@@ -185,7 +185,7 @@ def draw_pdf_style_map_precise(
     ymin_m, ymax_m = min(ys), max(ys)
 
     # Pixel transform (Easting->x, Northing->y)
-    def to_px_from_m(E: float, N: float) -> Tuple[int, int]:
+    def to_px_from_m(E: float, N: float) -> tuple[int, int]:
         x = padding_px + (E - xmin_m) / (xmax_m - xmin_m) * (width - 2 * padding_px)
         y = padding_px + (ymax_m - N) / (ymax_m - ymin_m) * (height - 2 * padding_px)
         return int(round(x)), int(round(y))

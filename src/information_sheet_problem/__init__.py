@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import sys
 
@@ -27,6 +27,7 @@ _DEFAULT_PNG_BYTES = bytes.fromhex(
 
 
 def _extract_png_bytes(rendered_map: object) -> bytes:
+    """Extract PNG bytes from common rendered-map byte attributes, with a fallback."""
     for attr in ("png_bytes", "image_bytes", "bytes", "data"):
         value = getattr(rendered_map, attr, None)
         if isinstance(value, bytes) and value:
@@ -35,11 +36,17 @@ def _extract_png_bytes(rendered_map: object) -> bytes:
 
 
 def save_generated_image(image_bytes: bytes, output_dir: Path | None = None) -> Path:
+    """Save image bytes to `generated/` with a UTC datetime filename and collision guard."""
     directory = output_dir or (Path.cwd() / "generated")
     directory.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S_%fZ")
     image_path = directory / f"{timestamp}.png"
+    suffix = 1
+    while image_path.exists():
+        image_path = directory / f"{timestamp}_{suffix}.png"
+        suffix += 1
+
     image_path.write_bytes(image_bytes)
     return image_path
 

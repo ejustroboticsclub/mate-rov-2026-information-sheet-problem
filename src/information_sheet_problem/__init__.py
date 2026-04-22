@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 import sys
+import warnings
 
 try:
     from .domain_data_classes import GeoPoint, Iceberg, ThreatLevel
@@ -21,6 +22,7 @@ __all__ = (
 )
 
 _DEFAULT_PNG_BYTES = bytes.fromhex(
+    # valid 1x1 PNG fallback used when rendered map has no image bytes attribute
     "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489"
     "0000000d49444154789c6360000000020001e221bc330000000049454e44ae426082"
 )
@@ -32,6 +34,10 @@ def _extract_png_bytes(rendered_map: object) -> bytes:
         value = getattr(rendered_map, attr, None)
         if isinstance(value, bytes) and value:
             return value
+    warnings.warn(
+        "No image bytes found on rendered map; using default 1x1 PNG fallback.",
+        stacklevel=2,
+    )
     return _DEFAULT_PNG_BYTES
 
 
@@ -42,15 +48,19 @@ def save_generated_image(image_bytes: bytes, output_dir: Path | None = None) -> 
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%S.%fZ")
     image_path = directory / f"{timestamp}.png"
-    suffix = 1
-    while True:
+    max_retries = 100
+    for suffix in range(max_retries + 1):
+        candidate = image_path if suffix == 0 else directory / f"{timestamp}_{suffix}.png"
         try:
-            with image_path.open("xb") as handle:
+            with candidate.open("xb") as handle:
                 handle.write(image_bytes)
-            return image_path
+            return candidate
         except FileExistsError:
-            image_path = directory / f"{timestamp}_{suffix}.png"
-            suffix += 1
+            continue
+
+    raise RuntimeError(
+        f"Could not create image file in {directory} after {max_retries} retries."
+    )
 
 
 def _demo_save_image() -> Path:

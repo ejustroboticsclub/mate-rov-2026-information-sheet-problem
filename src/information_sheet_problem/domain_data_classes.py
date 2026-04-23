@@ -49,7 +49,9 @@ class MapOverlay:
 
 @dataclass(frozen=True)
 class RenderedMap:
-    """TODO: should probably be a numpy image with fixed shape"""
+    """A map rendered as PNG bytes"""
+
+    png_bytes: bytes | None = None
 
 
 @dataclass(frozen=True)

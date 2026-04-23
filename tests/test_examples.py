@@ -8,7 +8,7 @@ from information_sheet_problem import GeoPoint, Iceberg, ThreatLevel, analyze_pl
 # we just have to deal with it for now.
 def _nmea_like_dms_to_decimal(
     degrees: int, minutes: int, seconds: int, hemisphere: str
-) -> float:
+) -> float: 
     value = degrees + minutes / 60 + seconds / 3600
     if hemisphere in {"S", "W"}:
         return -value
@@ -26,7 +26,7 @@ def _nmea_like_dms_to_decimal(
                     _nmea_like_dms_to_decimal(48, 37, 0, "W"),
                 ),
                 heading_degrees=158,
-                keel_depth=99,
+                keel_depth=99, 
             ),
             {
                 "Hibernia": ThreatLevel.GREEN,

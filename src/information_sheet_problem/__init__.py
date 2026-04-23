@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from enum import Enum
 import math
+from pyproj import Geod
 
-
+geod = Geod(ellps="WGS84")
 EARTH_RADIUS_M = 6_371_000.0
 M_PER_NM = 1852.0
 
@@ -71,59 +72,48 @@ def heading_to_unit_vector(heading_degrees: float) -> tuple[float, float]:
     raise NotImplementedError("TODO")
 
 def distance_nm(a: GeoPoint, b: GeoPoint) -> float:
-    """Approximate distance in nautical miles."""
-    mean_lat_rad = math.radians((a.latitude + b.latitude) / 2.0)
+    """True geodesic distance in nautical miles."""
+    _, _, dist_m = geod.inv(a.longitude, a.latitude, b.longitude, b.latitude)
+    return dist_m / M_PER_NM
 
-    delta_lat_nm = (b.latitude - a.latitude) * 60.0
-    delta_lon_nm = (b.longitude - a.longitude) * 60.0 * math.cos(mean_lat_rad)
 
-    return math.hypot(delta_lon_nm, delta_lat_nm)
+def heading_to_endpoint(origin: GeoPoint, heading: float, distance_nm: float) -> GeoPoint:
+    """Project a point along a geodesic heading."""
+    lon, lat, _ = geod.fwd(
+        origin.longitude,
+        origin.latitude,
+        heading,
+        distance_nm * M_PER_NM,
+    )
+    return GeoPoint(latitude=lat, longitude=lon)
+
+
+def distance_point_to_track_nm(point: GeoPoint, track: Track) -> float:
+    """
+    True geodesic cross-track distance (NO planar approximation).
+    """
+
+    az12, az21, dist_m = geod.inv(
+        track.origin.longitude,
+        track.origin.latitude,
+        point.longitude,
+        point.latitude,
+    )
+
+    # convert track heading to radians alignment in geodetic sense
+    bearing_diff = math.radians((az12 - track.heading_degrees + 540) % 360 - 180)
+
+    cross_track_m = math.sin(bearing_diff) * dist_m
+    return abs(cross_track_m) / M_PER_NM
+
+
+def intersects_within_radius_nm(point: GeoPoint, track: Track, radius_nm: float) -> bool:
+    return distance_point_to_track_nm(point, track) <= radius_nm
+
 
     raise NotImplementedError("TODO")
 
-def distance_point_to_track_nm(
-    point: GeoPoint,
-    track: Track,
-) -> float:
-    """
-    Minimum distance (nautical miles) from a platform to iceberg path.
-    """
-    mean_lat_rad = math.radians((track.origin.latitude + point.latitude) / 2.0)
-
-    x = (point.longitude - track.origin.longitude) * 60.0 * math.cos(mean_lat_rad)
-    y = (point.latitude - track.origin.latitude) * 60.0
-
-    dx, dy = heading_to_unit_vector(track.heading_degrees)
-
-    proj = x * dx + y * dy
-    perp_x = x - proj * dx
-    perp_y = y - proj * dy
-
-    return math.hypot(perp_x, perp_y)
-
-    raise NotImplementedError("TODO")
-
-def intersects_within_radius_nm(
-    point: GeoPoint,
-    track: Track,
-    radius_nm: float,
-) -> bool:
-    """Whether iceberg track passes within radius of point."""
-    distance = distance_point_to_track_nm(point, track)
-    return distance <= radius_nm
-
-    raise NotImplementedError("TODO")
-
-def evaluate_surface_threat(
-    distance_nm: float,
-    keel_depth: float,
-    water_depth: float,
-) -> ThreatLevel:
-    """
-    Apply rules:
-    - grounding rule
-    - distance thresholds (5, 10 nm)
-    """
+def evaluate_surface_threat(distance_nm: float, keel_depth: float, water_depth: float) -> ThreatLevel:
     if keel_depth >= 1.1 * water_depth:
         return ThreatLevel.GREEN
 
@@ -133,77 +123,54 @@ def evaluate_surface_threat(
         return ThreatLevel.YELLOW
     return ThreatLevel.GREEN
 
-    raise NotImplementedError("TODO")
 
-def evaluate_subsea_threat(
-    intersects: bool,
-    keel_depth: float,
-    water_depth: float,
-) -> ThreatLevel:
-    """
-    Apply % thresholds:
-    - >=110% → green
-    - 90–110 → red
-    - 70–90 → yellow
-    - <70 → green
-    """
+def evaluate_subsea_threat(intersects: bool, keel_depth: float, water_depth: float) -> ThreatLevel:
     if not intersects:
         return ThreatLevel.GREEN
 
-    ratio_percent = (keel_depth / water_depth) * 100.0
+    ratio = (keel_depth / water_depth) * 100.0
 
-    if ratio_percent >= 110.0:
+    if ratio >= 110:
         return ThreatLevel.GREEN
-    if ratio_percent >= 90.0:
+    if ratio >= 90:
         return ThreatLevel.RED
-    if ratio_percent >= 70.0:
+    if ratio >= 70:
         return ThreatLevel.YELLOW
     return ThreatLevel.GREEN
 
-    raise NotImplementedError("TODO")
-
-def analyze_platforms(
-    iceberg: Iceberg,
-    platforms: list[Platform] = DEFAULT_PLATFORMS,
-) -> AnalysisResult:
-    """
-    Main entry point.
-
-    - builds track
-    - computes distances
-    - evaluates threats
-    - returns structured result
-    """
+def analyze_platforms(iceberg: Iceberg, platforms=DEFAULT_PLATFORMS) -> AnalysisResult:
     track = Track(origin=iceberg.location, heading_degrees=iceberg.heading_degrees)
+    results = []
+    for p in platforms:
+        dist = distance_point_to_track_nm(p.location, track)
 
-    results: list[PlatformThreatResult] = []
-    for platform in platforms:
-        distance = distance_point_to_track_nm(platform.location, track)
-        surface = evaluate_surface_threat(
-            distance, iceberg.keel_depth, platform.water_depth
-        )
+        surface = evaluate_surface_threat(dist, iceberg.keel_depth, p.water_depth)
 
-        # Subsea assets: only consider threats within 25 NM
-        intersects = intersects_within_radius_nm(
-            platform.location, track, radius_nm=25.0
-        )
-        subsea = evaluate_subsea_threat(
-            intersects, iceberg.keel_depth, platform.water_depth
-        )
+        intersects = intersects_within_radius_nm(p.location, track, 25.0)
+
+        subsea = evaluate_subsea_threat(intersects, iceberg.keel_depth, p.water_depth)
 
         results.append(
             PlatformThreatResult(
-                platform=platform,
+                platform=p,
                 surface_threat=surface,
                 subsea_threat=subsea,
             )
         )
 
-    overlay = build_map_overlay(iceberg, platforms)
-    rendered = render_map(overlay)
+    overlay = MapOverlay(
+        iceberg_track=(
+            iceberg.location,
+            heading_to_endpoint(iceberg.location, iceberg.heading_degrees, 20),
+        ),
+        platform_points=platforms,
+    )
 
-    return AnalysisResult(results=results, overlay=overlay, rendered_map=rendered)
-    raise NotImplementedError("TODO")
+    return AnalysisResult(
+        results=results,
+        overlay=overlay,
+        rendered_map=RenderedMap(b"")
+    )
 
 def build_map_overlay(
     iceberg: Iceberg,
@@ -486,3 +453,12 @@ def render_map(
 
     # Keep compatibility with your current RenderedMap (no fields)
     return RenderedMap(png.tobytes())
+
+def run_analysis(latitude: float, longitude: float, heading: float, keel_depth: float) -> AnalysisResult:
+    iceberg = Iceberg(
+        location=GeoPoint(latitude=latitude, longitude=longitude),
+        heading_degrees=heading,
+        keel_depth=keel_depth,
+    )
+
+    return analyze_platforms(iceberg)

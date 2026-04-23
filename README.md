@@ -40,9 +40,24 @@ uv add git+https://github.com/ejustroboticsclub/mate-rov-2026-information-sheet-
 ```
 and then used inside the main workspace by importing it:
 ```python
-from information_sheet_problem import solve
+from information_sheet_problem import analyze_iceberg
 
-solve(input)
+# def analyze_iceberg(
+#     lat_degrees: int,
+#     lat_minutes: int,
+#     lat_seconds: int,
+#     lat_hemisphere: str,
+#     lon_degrees: int,
+#     lon_minutes: int,
+#     lon_seconds: int,
+#     lon_hemisphere: str,
+#     heading_degrees: float,
+#     keel_depth: float,
+#     platforms: list[Platform] = DEFAULT_PLATFORMS,
+# ) -> AnalysisResult:
+
+# example
+analyze_iceberg(47, 39, 0, "N", 48, 37, 0, "W", 158, 99)
 ```
 note that the API is still not determined and the above sample is just an example of what could be done. However this library is NOT responsible for handling taking the input from the user. This will probably be the responsibliy of the gui team since the input has to be manually taken.
 

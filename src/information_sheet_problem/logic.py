@@ -194,3 +194,37 @@ def render_map(overlay: MapOverlay) -> RenderedMap:
     No displaying, no saving to disk.
     """
     return RenderedMap()
+
+
+def analyze_iceberg(
+    lat_degrees: int,
+    lat_minutes: int,
+    lat_seconds: int,
+    lat_hemisphere: str,
+    lon_degrees: int,
+    lon_minutes: int,
+    lon_seconds: int,
+    lon_hemisphere: str,
+    heading_degrees: float,
+    keel_depth: float,
+    platforms: list[Platform] = DEFAULT_PLATFORMS,
+) -> AnalysisResult:
+    """
+    Exported main analysis function using DMS coordinates.
+    """
+    def _dms_to_decimal(deg: int, mins: int, secs: int, hem: str) -> float:
+        val = deg + mins / 60.0 + secs / 3600.0
+        if hem.upper() in {"S", "W"}:
+            return -val
+        return val
+
+    lat = _dms_to_decimal(lat_degrees, lat_minutes, lat_seconds, lat_hemisphere)
+    lon = _dms_to_decimal(lon_degrees, lon_minutes, lon_seconds, lon_hemisphere)
+
+    iceberg = Iceberg(
+        location=GeoPoint(latitude=lat, longitude=lon),
+        heading_degrees=heading_degrees,
+        keel_depth=keel_depth,
+    )
+
+    return analyze_platforms(iceberg, platforms=platforms)

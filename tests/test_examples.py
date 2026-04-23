@@ -1,33 +1,14 @@
 import pytest
 
-from information_sheet_problem import GeoPoint, Iceberg, ThreatLevel, analyze_platforms
-
-
-# TODO: this is a bit of a hack to convert the DMS coordinates in the PDF examples to decimal degrees. I don't
-# think we should be using decimal degrees in the first place but that is the initial design choice that I made so
-# we just have to deal with it for now.
-def _nmea_like_dms_to_decimal(
-    degrees: int, minutes: int, seconds: int, hemisphere: str
-) -> float:
-    value = degrees + minutes / 60 + seconds / 3600
-    if hemisphere in {"S", "W"}:
-        return -value
-    return value
+from information_sheet_problem import ThreatLevel, analyze_iceberg
 
 
 @pytest.mark.parametrize(
-    ("example_name", "iceberg", "expected_surface", "expected_subsea"),
+    ("example_name", "iceberg_args", "expected_surface", "expected_subsea"),
     [
         (
             "A",
-            Iceberg(
-                location=GeoPoint(
-                    _nmea_like_dms_to_decimal(47, 39, 0, "N"),
-                    _nmea_like_dms_to_decimal(48, 37, 0, "W"),
-                ),
-                heading_degrees=158,
-                keel_depth=99,
-            ),
+            (47, 39, 0, "N", 48, 37, 0, "W", 158, 99),
             {
                 "Hibernia": ThreatLevel.GREEN,
                 "Hebron": ThreatLevel.GREEN,
@@ -43,14 +24,7 @@ def _nmea_like_dms_to_decimal(
         ),
         (
             "B",
-            Iceberg(
-                location=GeoPoint(
-                    _nmea_like_dms_to_decimal(47, 58, 0, "N"),
-                    _nmea_like_dms_to_decimal(48, 50, 0, "W"),
-                ),
-                heading_degrees=180,
-                keel_depth=78,
-            ),
+            (47, 58, 0, "N", 48, 50, 0, "W", 180, 78),
             {
                 "Hibernia": ThreatLevel.RED,
                 "Hebron": ThreatLevel.GREEN,
@@ -66,14 +40,7 @@ def _nmea_like_dms_to_decimal(
         ),
         (
             "C",
-            Iceberg(
-                location=GeoPoint(
-                    _nmea_like_dms_to_decimal(47, 53, 0, "N"),
-                    _nmea_like_dms_to_decimal(47, 51, 0, "W"),
-                ),
-                heading_degrees=188,
-                keel_depth=112,
-            ),
+            (47, 53, 0, "N", 47, 51, 0, "W", 188, 112),
             {
                 "Hibernia": ThreatLevel.GREEN,
                 "Hebron": ThreatLevel.GREEN,
@@ -89,14 +56,7 @@ def _nmea_like_dms_to_decimal(
         ),
         (
             "D",
-            Iceberg(
-                location=GeoPoint(
-                    _nmea_like_dms_to_decimal(47, 40, 0, "N"),
-                    _nmea_like_dms_to_decimal(49, 25, 0, "W"),
-                ),
-                heading_degrees=152,
-                keel_depth=60,
-            ),
+            (47, 40, 0, "N", 49, 25, 0, "W", 152, 60),
             {
                 "Hibernia": ThreatLevel.RED,
                 "Hebron": ThreatLevel.RED,
@@ -112,14 +72,7 @@ def _nmea_like_dms_to_decimal(
         ),
         (
             "E",
-            Iceberg(
-                location=GeoPoint(
-                    _nmea_like_dms_to_decimal(47, 45, 0, "N"),
-                    _nmea_like_dms_to_decimal(48, 29, 0, "W"),
-                ),
-                heading_degrees=198,
-                keel_depth=84,
-            ),
+            (47, 45, 0, "N", 48, 29, 0, "W", 198, 84),
             {
                 "Hibernia": ThreatLevel.YELLOW,
                 "Hebron": ThreatLevel.GREEN,
@@ -135,14 +88,7 @@ def _nmea_like_dms_to_decimal(
         ),
         (
             "F",
-            Iceberg(
-                location=GeoPoint(
-                    _nmea_like_dms_to_decimal(47, 56, 0, "N"),
-                    _nmea_like_dms_to_decimal(47, 45, 0, "W"),
-                ),
-                heading_degrees=181,
-                keel_depth=126,
-            ),
+            (47, 56, 0, "N", 47, 45, 0, "W", 181, 126),
             {
                 "Hibernia": ThreatLevel.GREEN,
                 "Hebron": ThreatLevel.GREEN,
@@ -160,14 +106,14 @@ def _nmea_like_dms_to_decimal(
 )
 def test_analyze_platforms_matches_pdf_examples(
     example_name: str,
-    iceberg: Iceberg,
+    iceberg_args: tuple,
     expected_surface: dict[str, ThreatLevel],
     expected_subsea: dict[str, ThreatLevel],
 ) -> None:
     """Official examples taken from
     `https://20693798.fs1.hubspotusercontent-na1.net/hubfs/20693798/2026/Supporting%20Documents/Iceberg%20Information%20Examples%20EX%20PN%20RN%20Updated%202_16.pdf`"""
 
-    result = analyze_platforms(iceberg)
+    result = analyze_iceberg(*iceberg_args)
 
     got_surface = {item.platform.name: item.surface_threat for item in result.results}
     got_subsea = {item.platform.name: item.subsea_threat for item in result.results}

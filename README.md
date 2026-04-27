@@ -59,9 +59,6 @@ from information_sheet_problem import analyze_iceberg
 # example
 analyze_iceberg(47, 39, 0, "N", 48, 37, 0, "W", 158, 99)
 ```
-note that the API is still not determined and the above sample is just an example of what could be done. However this library is NOT responsible for handling taking the input from the user. This will probably be the responsibliy of the gui team since the input has to be manually taken.
+note that the API is flexible and the above sample is just an example of what could be done. However this library is NOT responsible for handling taking the input from the user. This will probably be the responsibliy of the gui team since the input has to be manually taken from the sheet.
 
 
-## TODOs
-- make sure that the input to your function is friendly (idk how to represent a geopoint inside a float tbh there is probably a better way)
-- we probably need to write a function that takes seperate (hours,minutes,seconds) and convert them to a geopoint
